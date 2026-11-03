@@ -36,10 +36,10 @@ typedef struct NailStream NailStream;
 typedef struct NailOutStream NailOutStream;
 typedef size_t NailStreamPos;
 typedef size_t NailOutStreamPos;
-static NailStream * NailStream_alloc(NailArena *arena) {
+static inline NailStream * NailStream_alloc(NailArena *arena) {
         return (NailStream *)n_malloc(arena, sizeof(NailStream));
 } 
-static NailOutStream * NailOutStream_alloc(NailArena *arena) {
+static inline NailOutStream * NailOutStream_alloc(NailArena *arena) {
         return (NailOutStream *)n_malloc(arena, sizeof(NailOutStream));
 } 
 extern int NailOutStream_init(NailOutStream *str,size_t siz);
