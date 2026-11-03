@@ -234,7 +234,7 @@ public:
   CAction(std::ostream *os,std::string _arena): out(*os), num_iters(1),arena(_arena){}
  
   void emit_action(const grammar &grammar){
-    Endian end;
+    Endian end = Big; // must match CPrimitiveParser and the generator default
     FOREACH(def, grammar){
       if(def->N_type == PARSER){ 
         std::string name= mk_str(def->parser.name);
