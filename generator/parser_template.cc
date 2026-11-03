@@ -90,9 +90,12 @@ typedef struct NailArenaPool{
 void *n_malloc(NailArena *arena, size_t size)
 {
         void *retval;
+        // Keep every allocation 8-byte aligned: the arena holds structs and
+        // uint16/32/64 arrays, and bumping by the raw size misaligns them.
+        size = (size + 7) & ~(size_t)7;
         if(arena->current->end - arena->current->iter <= size){
                 size_t siz = arena->blocksize;
-                if(size>siz)
+                if(size + sizeof(NailArenaPool) > siz)
                         siz = size + sizeof(NailArenaPool);
                 NailArenaPool *newpool  = (NailArenaPool *)malloc(siz);
                 if(!newpool){
@@ -137,9 +140,14 @@ NailArenaPos n_arena_save(NailArena *arena)
     return retval;
 }
 void n_arena_restore(NailArena *arena, NailArenaPos p) {
-    arena->current = p.pool;
+    // Free pools allocated after the save point; they are not reachable
+    // from p.pool, so leaving them linked would leak them.
+    while(arena->current != p.pool){
+        NailArenaPool *next = arena->current->next;
+        free(arena->current);
+        arena->current = next;
+    }
     arena->current->iter = p.iter;
-    //memory will remain linked
 }
 //Returns the pointer where the taken choice is supposed to go.
 
