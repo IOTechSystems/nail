@@ -4,10 +4,16 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <list>
+#include <algorithm>
 class CDataModel{
   std::stringstream out;
   std::ostream &outs;
   std::list<std::string> global_enum;
+  // Tags may be reused across choose/select blocks; emit each enumerator once.
+  void add_enum(const std::string &tag){
+    if(std::find(global_enum.begin(), global_enum.end(), tag) == global_enum.end())
+      global_enum.push_front(tag);
+  }
   std::string int_type(const intp &intp ){
     int length = boost::lexical_cast<int>(mk_str(intp.sign));
     if(length<=8) length = 8;
@@ -48,7 +54,7 @@ class CDataModel{
     case SELECTP:{
       out << "struct " << name << "{\n";
       FOREACH(option, p.selectp.options){
-        global_enum.push_front(mk_str(option->tag));
+        add_enum(mk_str(option->tag));
       }
       out<< "enum N_types N_type;\n";
       out << "union {\n";
@@ -75,7 +81,7 @@ class CDataModel{
         out << "} N_type; \n";
       }  else{
         FOREACH(option, p.choice){
-          global_enum.push_front(mk_str(option->tag));
+          add_enum(mk_str(option->tag));
         }
         out<< "enum N_types N_type;\n";
       }
